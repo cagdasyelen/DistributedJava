@@ -1,0 +1,19 @@
+target = ipASW.ASWMainClass
+
+@using=jpf-symbc
+@using=jpf-regression
+
+classpath = ${testHome}/version0/bin
+
+sourcepath = ${testHome}/version0
+
+symbolic.method= ipASW.asw.Main0(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
+
+symbc.results=${testHome}/testCases/ipASW/ipASWV0.txt
+symbc.testCases=true
+
+# listener to print information (PCs, test cases) about symbolic run
+listener = gov.nasa.jpf.regression.listener.RSESymbolicListener
+
+# no state matching
+vm.storage.class=nil
