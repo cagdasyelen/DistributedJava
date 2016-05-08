@@ -96,13 +96,11 @@ int main(int argc, char *argv[]){
                MPI_Send(&my_rank, 1, MPI_INT, 0, tag, MPI_COMM_WORLD);
                MPI_Recv(&num, 1,MPI_INT, 0, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                if(num >= N){
-                  printf("The number received is %d\nExiting,,,\n",num);
                   int abort = -1;
                   MPI_Send(&abort, 1, MPI_INT, 0 ,tag, MPI_COMM_WORLD);
                   loop_check = -1;
                }
                else{
-                  printf("Asigning range %d to node %d\n", num,rank);  
                   sprintf(number, "%d", num);
                   strcpy(str, "./run_slave.sh ");
                   strcat(str, argv[1]);
