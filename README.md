@@ -4,8 +4,11 @@ Distributed Java: A prototype of distributed Symbolic PathFinder (SPF).
 
 ###Contributors###
 
+
 * Cagdas Yelen
+* Rui Qiu
 * Neil Klenk
+
 
 ### How do I get set up? ###
 
