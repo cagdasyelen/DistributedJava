@@ -47,12 +47,15 @@ int main(int argc, char *argv[]){
 
    }
 
-
+   /* Dynamically assigning jobs to available slaves */
    else if(size<N){
+ 
       int tag = 1;
       int job_status = -1;
       char str[80];
       char number[2];
+      
+      /* Distribute the initial jobs(Ranges from 0 to size-1) to all slaves */
       if(rank != 0){
          sprintf(number, "%d", rank-1);
          strcpy(str, "./run_slave.sh ");
@@ -63,19 +66,33 @@ int main(int argc, char *argv[]){
       }
 
       int job_count = size-1;
+
+      /* Node 0 is the master node, which manages the job distribution over the slaves */
       if(rank == 0){
          int dest;
          int job;
          int exit_sum = 0;
-         int check = 1;
-         while(check == 1){
+         int done_check = 0;
+  
+         /* Until all slaves report that they are done, distribute the jobs */
+         while(done_check == 0){
+
+            /* Receiving the rank of the next available slave */
             MPI_Recv(&dest, 1, MPI_INT, MPI_ANY_SOURCE,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+            
+            /* If the all jobs are done(no jobs in the queue), slave reports -1 */
             if(dest==-1){
+
+               /* Increment the exit_sum as the slaves reports -1
+                * If the overall sum equals to number of slaves*-1, exit the outher while loop  
+                */   
                exit_sum = exit_sum -1;
                if(exit_sum == (size-1)*-1){
-                  check = -1;
+                  done_check = -1;
                }
             }
+
+            /* Send the next job in the queue to available slave */
             else{
                job = job_count;
                MPI_Send(&job, 1, MPI_INT, dest, tag, MPI_COMM_WORLD);
@@ -85,21 +102,36 @@ int main(int argc, char *argv[]){
       } 
       
       
-      
+      /* Slave nodes */
       else{
          int num;
          int loop_check =0;
+
+         /* As long as there is a job in queue(job_num < N), stay in the while loop*/
          while(loop_check ==0){
+
+            /* job_status is the return value of the system call
+             * If it is 0, that means the slave is available and
+             * can ask for a new job.
+             */
             if(job_status == 0){
                job_status = -1;
                int my_rank = rank;
+               
+               /* The slave sends its rank to the master to indicate that it is available */
                MPI_Send(&my_rank, 1, MPI_INT, 0, tag, MPI_COMM_WORLD);
+
+               /* Job number is being received from the master */
                MPI_Recv(&num, 1,MPI_INT, 0, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+               
+               /* If the job number exceeds the total number of jobs, report "done" */
                if(num >= N){
-                  int abort = -1;
-                  MPI_Send(&abort, 1, MPI_INT, 0 ,tag, MPI_COMM_WORLD);
+                  int done = -1;
+                  MPI_Send(&done, 1, MPI_INT, 0 ,tag, MPI_COMM_WORLD);
                   loop_check = -1;
                }
+
+               /* Otherwise, perform the job */ 
                else{
                   sprintf(number, "%d", num);
                   strcpy(str, "./run_slave.sh ");
@@ -116,5 +148,4 @@ int main(int argc, char *argv[]){
 
    MPI_Finalize();
 }
-
 
